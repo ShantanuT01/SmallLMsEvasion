@@ -1,8 +1,10 @@
 from transformers import Pipeline
 from tqdm import tqdm
+import pandas as pd
 
+from tinylm.constants import *
 
-def prompt_slm(pipe: Pipeline, prompts: list, batch_size: int):
+def prompt_slm_zero_shot(pipe: Pipeline, prompts: list, batch_size: int):
     def prompt_generator():
         for prompt in prompts:
             yield prompt
@@ -11,20 +13,30 @@ def prompt_slm(pipe: Pipeline, prompts: list, batch_size: int):
     for result in tqdm(pipe(prompt_generator(), batch_size=batch_size), total=len(prompts)):
         results.append(result)
     
-    return results
+    ret = pd.DataFrame()
+    ret[PROMPT] = prompts
+    ret[TEXT] = results
+    ret[LABEL] = 1
+    ret[MODEL] = pipe.model.config._name_or_path
+    return ret
 
 
-def prompt_slm_one_shot(pipe: Pipeline, prompt: str, one_shot_examples: list, batch_size: int):
+def prompt_slm_k_shot(pipe: Pipeline, prompt: str, examples: list, batch_size: int):
+    formatted_prompts = [f"{prompt}\n\n" + "\n\n".join([f"Example: {example}" for example in example_set]) for example_set in examples]
     def prompt_generator():
-        for example in one_shot_examples:
-            formatted_prompt = f"{prompt}\n\nExample:\n\n{example}\n\n"
+        for formatted_prompt in formatted_prompts:
             yield formatted_prompt
     
     results = list()
-    for result in tqdm(pipe(prompt_generator(), batch_size=batch_size), total=len(one_shot_examples)):
+    for result in tqdm(pipe(prompt_generator(), batch_size=batch_size), total=len(examples)):
         results.append(result)
-    
-    return results
+
+    ret = pd.DataFrame()
+    ret[PROMPT] = formatted_prompts
+    ret[TEXT] = results
+    ret[LABEL] = 1
+    ret[MODEL] = pipe.model.config._name_or_path
+    return ret
 
 
 
