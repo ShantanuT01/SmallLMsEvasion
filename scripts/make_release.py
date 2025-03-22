@@ -23,5 +23,28 @@ if __name__ == "__main__":
                         text = text.strip("Example:").strip()
                     texts.append(text)
                 df["text"] = texts
+            if "gemma" in file:
+                subset = list()
+                for i in range(len(df["text"].values)):
+                    text = df["text"].values[i]
+                    if "I" in text and "generate" in text and "can" in text:
+                        continue
+                    else:
+                        if ":\n\n" in text:
+                            text = text.split(":\n\n")[1].strip()
+                        subset.append(
+                            {
+                                "prompt": df["prompt"].values[i],
+                                "text": text,
+                                "label": 1,
+                                "domain": domain,
+                                "model":df.model.values[i]
+                            }
+                        )
+                df = pd.DataFrame(subset)
+                df = df.iloc[0:200]
+
+                        
+                        
             frames.append(df)
     pd.concat(frames).to_csv("../data/test.csv",index=False)

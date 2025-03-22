@@ -84,7 +84,7 @@ if __name__ == "__main__":
     results["model"] = df["model"].to_list()
     results["model"] = results["model"].fillna("human")
     results["domain"] = df["domain"].to_list()
-    results["mage_pred"] = scores
+    results["desk_lib_pred"] = scores
     results["label"] = df["label"].to_list()
     results.to_csv("desklib_results.csv",index=False)
     print("AUC Score:", roc_auc_score(y_score=scores, y_true=df["label"].to_list()))
@@ -94,5 +94,5 @@ if __name__ == "__main__":
             continue
         else:
             sf = results[results["model"].isin({"human",model})]
-            print(f"{model} AUC Score:", roc_auc_score(y_score=sf["mage_pred"], y_true=sf["label"]))
-            print(f"{model} AP Score:", average_precision_score(y_score=sf["mage_pred"], y_true=sf["label"]))
+            print(f"{model} AUC Score:", roc_auc_score(y_score=sf["desk_lib_pred"], y_true=sf["label"]))
+            print(f"{model} AP Score:", average_precision_score(y_score=sf["desk_lib_pred"], y_true=sf["label"]))
