@@ -4,6 +4,7 @@ from transformers import AutoTokenizer, AutoModel
 from sklearn.metrics import roc_auc_score, average_precision_score
 from tqdm import tqdm
 import torch
+import numpy as np
 from torch import nn
 from transformers import AutoTokenizer, AutoConfig, AutoModel, PreTrainedModel
 
@@ -42,9 +43,9 @@ class DesklibAIDetectionModel(PreTrainedModel):
             output["loss"] = loss
         return output
 
-def predict_single_text(text, model, tokenizer, device, max_len=768, threshold=0.5):
-    encoded = tokenizer(
-        text,
+def predict_texts(texts, model, tokenizer, device, max_len=768, threshold=0.5):
+    encoded = tokenizer.batch_encode_plus(
+        texts,
         padding='max_length',
         truncation=True,
         max_length=max_len,
@@ -54,13 +55,14 @@ def predict_single_text(text, model, tokenizer, device, max_len=768, threshold=0
     attention_mask = encoded['attention_mask'].to(device)
 
     model.eval()
+    predictions = list()
     with torch.no_grad():
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         logits = outputs["logits"]
-        probability = torch.sigmoid(logits).item()
-
-    label = 1 if probability >= threshold else 0
-    return probability, label
+        probabilities = torch.sigmoid(logits).cpu().detach().numpy()
+        predictions.append(probabilities)
+    #label = 1 if probability >= threshold else 0
+    return np.concatenate(predictions)
 
 
 if __name__ == "__main__":
@@ -74,25 +76,28 @@ if __name__ == "__main__":
     
     
 
-    df = pd.read_csv("../data/test.csv")
+    df = pd.read_csv("../release/prompting_test.csv")
     scores = list()
-    for text in tqdm(df["text"].values):
-        prob, _ = predict_single_text(text, model, tokenizer,device="cuda")
-        scores.append(prob)
+    batch_size = 16
+    texts = df["text"].to_list()
+    for i in tqdm(range(0, len(texts), batch_size)):
+        probs = predict_texts(texts[i:i+batch_size], model, tokenizer,device="cuda")
+        scores.extend(probs.flatten())
     results = pd.DataFrame()
-    results["text"] = df["text"].to_list()
+    results["text"] = texts
     results["model"] = df["model"].to_list()
     results["model"] = results["model"].fillna("human")
     results["domain"] = df["domain"].to_list()
+    results["prompt-strategy"] = df["prompt-strategy"].to_list()
     results["desk_lib_pred"] = scores
     results["label"] = df["label"].to_list()
     results.to_csv("desklib_results.csv",index=False)
     print("AUC Score:", roc_auc_score(y_score=scores, y_true=df["label"].to_list()))
     print("AP Score:", average_precision_score(y_score=scores, y_true=df["label"].to_list()))
-    for model in results["model"].unique():
+    for model in results["prompt-strategy"].unique():
         if model == "human":
             continue
         else:
-            sf = results[results["model"].isin({"human",model})]
+            sf = results[results["prompt-strategy"].isin({"human",model})]
             print(f"{model} AUC Score:", roc_auc_score(y_score=sf["desk_lib_pred"], y_true=sf["label"]))
             print(f"{model} AP Score:", average_precision_score(y_score=sf["desk_lib_pred"], y_true=sf["label"]))

@@ -5,8 +5,6 @@ from tinylm.prompt import prompt_slm_k_shot, prompt_slm_zero_shot, prompt_slm_co
 import dotenv
 import os
 from peft import PeftModel
-from nltk.tokenize import sent_tokenize
-from tqdm import tqdm
 import argparse
 
 dotenv.load_dotenv()
@@ -23,6 +21,8 @@ if __name__ == "__main__":
     parser.add_argument("--new_model_name",type=str,default=None)
     parser.add_argument("--continuation",type=bool,default=False)
     parser.add_argument("--system_prompts",type=str,default=None)
+    parser.add_argument("--local_dataset",type=str,default=None)
+    parser.add_argument("--trim_continuation",type=bool,default=True)
     args = parser.parse_args()
 
     # get selected domain from MAGE
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     domain_test_set = test_set[(test_set["src"].str.contains(domain))]
     # 1 = human written text
     domain_test_set = domain_test_set[domain_test_set["label"] == 1]
-    examples = domain_test_set["text"].sample(n=args.dataset_size)
+    examples = domain_test_set["text"].sample(n=args.dataset_size).to_list()
     model_name = args.model_name
     
     tokenizer = AutoTokenizer.from_pretrained(model_name,tokenizer=os.environ["HF_TOKEN"])
@@ -65,16 +65,22 @@ if __name__ == "__main__":
             examples_2d = list()
             for i in range(0, args.dataset_size,args.k_shot):
                 examples_2d.append(examples[i:i+args.k_shot])
+            if args.system_prompts is not None:
+                input_frame = pd.read_json(args.system_prompts)
+                examples_2d = input_frame["examples"]
             output_dataframe = prompt_slm_k_shot(pipe, args.system_prompt, examples_2d, args.max_new_tokens)
             output_dataframe["shot"] = args.k_shot
-            output_dataframe["examples"] = ["\n\n".join(example_list) for example_list in examples_2d]
+            output_dataframe["examples"] = examples_2d
             output_dataframe["peft"] = (args.peft_path is not None)
 
             
         else:
             system_prompts = [args.system_prompt for _ in range(args.dataset_size)]
             if args.system_prompts is not None:
-                system_prompts = pd.read_csv(args.system_prompts).sample(n=200)["prompt"].to_list()
+                if args.system_prompts.endswith(".csv"):
+                    system_prompts = pd.read_csv(args.system_prompts)["prompt"].to_list()
+                else:
+                    system_prompts = pd.read_json(args.system_prompts)["prompt"].to_list()
                 system_prompts = [f"{args.system_prompt} {system_prompt}" for system_prompt in system_prompts]
             output_dataframe = prompt_slm_zero_shot(pipe, system_prompts, args.max_new_tokens)
             output_dataframe["shot"] = args.k_shot
@@ -84,6 +90,17 @@ if __name__ == "__main__":
         
     else:
         pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
+        if args.system_prompts is not None:
+            if args.system_prompts.endswith(".csv"):
+                examples = pd.read_csv(args.system_prompts)["examples"].to_list()
+            else:
+                examples = pd.read_json(args.system_prompts)["examples"].to_list()
+            flatten_examples = list()
+            for list_of_examples in examples:
+                for example in list_of_examples:
+                    flatten_examples.append(example)
+            examples = flatten_examples
+
         output_dataframe = prompt_slm_continuation(pipe, examples, args.max_new_tokens,batch_size=4)
         output_dataframe["shot"] = args.k_shot
         output_dataframe["examples"] = examples

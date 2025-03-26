@@ -15,13 +15,13 @@
 
 # Continuation no fine-tuning
 #python generate_data.py --model_name="meta-llama/Llama-3.2-1B-Instruct" --domain="yelp"  --continuation=True --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_base_model_continuation.json"
-#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp"  --continuation=True --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_abliterated_model_continuation.json"
+#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp" --continuation=True --system_prompts="release/yelp_base_model_continuation.json" --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_abliterated_model_continuation.json"
 
 
 
 # 1 shot no finetuning
-#python generate_data.py --model_name="meta-llama/Llama-3.2-1B-Instruct" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_base_model_1_shot.json"
-#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_abliterated_model_1_shot.json"
+#python generate_data.py --model_name="meta-llama/Llama-3.2-1B-Instruct" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --system_prompts="release/yelp_base_model_continuation.json" --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_base_model_1_shot.json"
+#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --system_prompts="release/yelp_base_model_continuation.json"  --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_abliterated_model_1_shot.json"
 
 # Zero Shot Finetuning
  
@@ -40,9 +40,9 @@
 
 
 # Continuation Finetuning
-#python generate_data.py --model_name="meta-llama/Llama-3.2-1B-Instruct" --domain="yelp"  --continuation=True --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_base_model_continuation_finetuned.json" --peft_path="models/fine_tuned_llama_3-2_1b_yelp" --new_model_name="meta-llama/Llama-3.2-1B-Instruct-finetuned-yelp";
-#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp"  --continuation=True --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_abliterated_model_continuation_finetuned.json" --peft_path="models/fine_tuned_llama_3-2_1b_abliterated_yelp" --new_model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated-finetuned-yelp";
+#python generate_data.py --model_name="meta-llama/Llama-3.2-1B-Instruct" --domain="yelp"  --continuation=True --system_prompts="release/yelp_base_model_continuation.json" --dataset_size=200 --max_new_tokens=128 --output_path="release/yelp_base_model_continuation_finetuned.json" --peft_path="models/fine_tuned_llama_3-2_1b_yelp" --new_model_name="meta-llama/Llama-3.2-1B-Instruct-finetuned-yelp";
+#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp"  --continuation=True --dataset_size=200 --system_prompts="release/yelp_base_model_continuation.json" --max_new_tokens=128 --output_path="release/yelp_abliterated_model_continuation_finetuned.json" --peft_path="models/fine_tuned_llama_3-2_1b_abliterated_yelp" --new_model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated-finetuned-yelp";
 
 # 1 shot finetuning
-#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --dataset_size=200 --peft_path="models/fine_tuned_llama_3-2_1b_abliterated_yelp" --max_new_tokens=128 --output_path="release/yelp_abliterated_model_1_shot_finetuned.json" --new_model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated-finetuned-yelp"
-#python generate_data.py --model_name="meta-llama/Llama-3.2-1B-Instruct" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --dataset_size=200 --peft_path="models/fine_tuned_llama_3-2_1b_yelp" --max_new_tokens=128 --output_path="release/yelp_base_model_1_shot_finetuned.json" --new_model_name="meta-llama/Llama-3.2-1B-Instruct-finetuned-yelp"
+#python generate_data.py --model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --dataset_size=200 --peft_path="models/fine_tuned_llama_3-2_1b_abliterated_yelp"  --system_prompts="release/yelp_base_model_continuation.json"  --max_new_tokens=128 --output_path="release/yelp_abliterated_model_1_shot_finetuned.json" --new_model_name="huihui-ai/Llama-3.2-1B-Instruct-abliterated-finetuned-yelp";
+#python generate_data.py --model_name="meta-llama/Llama-3.2-1B-Instruct" --domain="yelp" --k_shot=1 --system_prompt="Generate a new review that mimics the style of the following review(s)." --dataset_size=200 --peft_path="models/fine_tuned_llama_3-2_1b_yelp" --max_new_tokens=128  --system_prompts="release/yelp_base_model_continuation.json"  --output_path="release/yelp_base_model_1_shot_finetuned.json" --new_model_name="meta-llama/Llama-3.2-1B-Instruct-finetuned-yelp"
