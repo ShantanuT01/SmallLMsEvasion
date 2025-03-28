@@ -35,11 +35,11 @@ if __name__ == "__main__":
     examples = domain_test_set["text"].sample(n=args.dataset_size).to_list()
     model_name = args.model_name
     
-    tokenizer = AutoTokenizer.from_pretrained(model_name,tokenizer=os.environ["HF_TOKEN"])
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     if args.peft_path is not None:
         print("Using a PEFT model.")
-        model = AutoModelForCausalLM.from_pretrained(model_name, token=os.environ["HF_TOKEN"])
+        model = AutoModelForCausalLM.from_pretrained(model_name)
         #model.to("cuda")
         model = PeftModel.from_pretrained(model, args.peft_path)
         model.to("cuda")
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     if args.new_model_name is not None:
         output_dataframe["model"] = args.new_model_name
     output_dataframe["domain"] = args.domain
-    output_dataframe.to_json(args.output_path,index=False,orient="records",indent=4)
+   # output_dataframe.to_json(args.output_path,index=False,orient="records",indent=4)
    # prompts = pd.read_csv("data/yelp_finetuned-llama-3.2-1B-continuation.csv")
     #pd.DataFrame(rows).to_csv("data/yelp_llama-3.2-1B-continuation.csv",index=False)
     #prompt = "Generate a new review that mimics the style of the following review(s). Output only the text of the review."
