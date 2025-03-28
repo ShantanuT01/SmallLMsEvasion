@@ -18,6 +18,6 @@ Existing literature (as of February 2025) tends to focus on AI text detection fr
 
 `tinylm` is a helper library to generate texts from small language models. 
 
-## Dataset
+## Finetuned Models and Datasets
 
-We use the MAGE dataset as the baseline
+We provide our testing and finetuning datasets, as well as our models at the following [link](https://huggingface.co/collections/ShantanuT01/r255-67e2f764cf1146a8fbd7f0c8). 
