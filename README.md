@@ -11,12 +11,15 @@ Existing literature (as of February 2025) tends to focus on AI text detection fr
 - Works on limited GPU
 - Less parameters often equates to faster fine-tuning
 
+In this project, we investigated how well existing detectors perform on Llama-3.2-1B-Instruct generated texts. 
 ## Code Structure
 ### Modules
 
-`llm_attacker` is a helper library to create attacked texts on a detector. 
+`llm_attacker` is a helper library to create attacked synonym-substituted texts on a detector.  
 
 `tinylm` is a helper library to generate texts from small language models. 
+
+`benchmarks` folder contains example code to test three classifiers. 
 
 ## Finetuned Models and Datasets
 
@@ -28,7 +31,7 @@ peft_config = LoraConfig(
     r=8,
     lora_alpha=16,
     target_modules=
-        ["q_proj", "v_proj","k_proj", "o_proj","gate_proj","up_proj","down_proj"],#"gate_proj"],
+        ["q_proj", "v_proj","k_proj", "o_proj","gate_proj","up_proj","down_proj"],
     lora_dropout=0.1,
     bias="none",
     task_type="CAUSAL_LM",
@@ -50,3 +53,24 @@ training_args = TrainingArguments(
 )
 ```
 
+You can use the fine-tuned models from HuggingFace as follows:
+```python
+from transformers import pipeline
+
+model_id = "ShantanuT01/Llama-3.2-1B-Instruct-wp-finetuned" # replace with model you want!
+pipe = pipeline("text-generation", model_id)
+
+# for continuation
+outputs = pipe("Hello, World!")
+
+# or you can pass in system messages
+messages = [  
+    {"role": "user", "content": "Hello, World!"}
+]
+output_from_messages = pipe(messages)
+```
+
+For datasets, we recommend downloading the individual CSV files from HuggingFace. 
+
+- [Testing Data](https://huggingface.co/datasets/ShantanuT01/R255-Test-Generations/tree/main)
+- [Finetuning Data](https://huggingface.co/datasets/ShantanuT01/R255-Finetuning-Datasets/tree/main)
