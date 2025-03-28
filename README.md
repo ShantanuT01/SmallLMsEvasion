@@ -74,3 +74,8 @@ For datasets, we recommend downloading the individual CSV files from HuggingFace
 
 - [Testing Data](https://huggingface.co/datasets/ShantanuT01/R255-Test-Generations/tree/main)
 - [Finetuning Data](https://huggingface.co/datasets/ShantanuT01/R255-Finetuning-Datasets/tree/main)
+
+## Hardware Used
+
+SLM-generation was done on an RTX 3070 Ti. 
+Fine-tuning was done on Kaggle's T4 $\times$ 2. 
